@@ -2,8 +2,11 @@
 #define _probability_h
 
 #include "nodeInfo.h"
+#include "setting.h"
+#include "nodeInfo.h"
 
-void calculateProbability(staInfo*, int);
+int selectNode(staInfo*, bool*, bool*, bool*);
+void calculateProbability(staInfo*, apInfo*, int);
 void initializeMatrix(void);
 void solveLP(void);
 

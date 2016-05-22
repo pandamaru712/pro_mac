@@ -14,6 +14,7 @@
 #include "macro.h"
 #include "probability.h"
 #include "success.h"
+#include "perModel.h"
 
 #include "engine.h"
 #include "matrix.h"
@@ -25,11 +26,11 @@ simSpec gSpec;
 FILE *gFileSta;
 
 Engine *gEp;
-double r[(NUM_STA+1)*(NUM_STA+1)] = {-1, -4, -45, -51, -29, -42, -16, -1, -25, -39, -24, -35, -3, -23, -1, -56, -78, -10, -11, -34, -22, -1, -7, -67, -45, -23, -65, -55, -1, -76, -12, -6, -95, -67, -52, -1};
+double r[(NUM_STA+1)*(NUM_STA+1)] = {};//{-1, -4, -45, -51, -29, -42, -16, -1, -25, -39, -24, -35, -3, -23, -1, -56, -78, -10, -11, -34, -22, -1, -7, -67, -45, -23, -65, -55, -1, -76, -12, -6, -95, -67, -52, -1};
 double pro[NUM_STA+1][NUM_STA+1];
 double dummyA[NUM_STA*2][(NUM_STA+1)*(NUM_STA+1)];
 double A[NUM_STA*2][(NUM_STA+1)*(NUM_STA+1)];
-double u[NUM_STA*2] = {-5, -10, -12.5, -7.5, -15, -10, -22.5, -2.5, -7.5, -7.5};;
+double u[NUM_STA*2];
 double dummyAeq[2][(NUM_STA+1)*(NUM_STA+1)];
 double Aeq[2][(NUM_STA+1)*(NUM_STA+1)];
 double beq[2] = {100, 0};
@@ -41,26 +42,28 @@ int main(int argc, char *argv[]){
 	//Check option values from command line.
 	//checkOption(argc, argv);
 	//Apply option values to simulation settings.
-
+	printf("Start simulation.\n");
 	if(!(gEp = engOpen(""))){
-		fprintf(stderr, "\nCan't start MATLAB engine\n");
+		fprintf(stderr, "\nCan't start MATLAB engine.\n");
 		return EXIT_FAILURE;
 	}
+	printf("Open MATLAB engine.\n");
 
 	simSetting(argc,argv);
-	initializeMatrix();
+	printf("Set simulation parameters.\n");
 	/*if((gFileSta=fopen("sta's buffer.txt", "w"))==NULL){
 		printf("File cannot open! 3");
 		exit(33);
 	}*/
 
-	staInfo sta[NUM_STA];
+	staInfo *sta;
+	sta = (staInfo *)malloc(sizeof(staInfo)*gSpec.numSta);
+
 	//sta = (staInfo*)malloc(sizeof(staInfo)*gSpec.numSta);
 	apInfo ap;
 	resultInfo result;
 	//Intialize result information.
 	initializeResult(&result);
-
 	if(gSpec.fDebug==true){
 		debug();
 		//printf("End debug.\n");
@@ -77,7 +80,9 @@ int main(int argc, char *argv[]){
 		numTx = 0;
 		fEmpty = false;
 		initializeNodeInfo(sta, &ap);
-		calculateProbability(sta, 1);
+		initializeMatrix();
+		printf("Initialization NodeInfo and Matrix.\n");
+		calculateProbability(sta, &ap, 1);
 
 		for( ;gElapsedTime<gSpec.simTime*1000000; ){
 			transmission(sta, &ap);
@@ -123,8 +128,10 @@ int main(int argc, char *argv[]){
 		fclose(gSpec.output);
 	}
 	//fclose(gFileSta);
-	//free(sta);
+	free(sta);
+	printf("Free memory space.\n");
 
 	engClose(gEp);
+	printf("Close MATLAB.\nFinish.\n");
 	return 0;
 }

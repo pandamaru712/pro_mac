@@ -9,6 +9,7 @@ extern simSpec gSpec;
 typedef struct frameInformation{
 	int lengthMsdu;
 	double timeStamp;
+	//int destination;
 }frameInfo;
 
 typedef struct staInformatioin{
@@ -27,6 +28,7 @@ typedef struct staInformatioin{
 	bool fSuccNow;
 	int afterSucc;
 	bool fTx;
+	bool fRx;
 	long sumFrameLengthInBuffer;
 	double sumDelay;
 	int waitFrameLength;
@@ -36,6 +38,7 @@ typedef struct staInformatioin{
 	double antennaGain;
 	double timeNextFrame;
 	double distanceAp;
+	double dataRate;
 }staInfo;
 
 typedef struct apInformation{

@@ -7,4 +7,6 @@ void initializeResult(resultInfo*);
 
 void initializeNodeInfo(staInfo*, apInfo*);
 
+void initializeDoubleArray(double*, int, double);
+
 #endif

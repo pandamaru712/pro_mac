@@ -3,6 +3,7 @@
 #include "bufferManager.h"
 #include "frameGen.h"
 #include "macro.h"
+#include "limits.h"
 
 extern double gElapsedTime;
 extern simSpec gSpec;
@@ -20,12 +21,14 @@ void swapAp(apInfo *ap){
 			}
 			temp[numNotZero].lengthMsdu = ap->buffer[i].lengthMsdu;
 			temp[numNotZero].timeStamp = ap->buffer[i].timeStamp;
+			//temp[numNotZero].destination = ap->buffer[i].destination;
 			numNotZero++;
 		}
 	}
 	for(i=0; i<numNotZero; i++){
 		ap->buffer[i].lengthMsdu = temp[i].lengthMsdu;
 		ap->buffer[i].timeStamp = temp[i].timeStamp;
+		//ap->buffer[i].destination = temp[i].destination;
 
 		if(gSpec.delayMode==1){
 			if(i==0){
@@ -41,6 +44,7 @@ void swapAp(apInfo *ap){
 	for(; i<BUFFER_SIZE; i++){
 		ap->buffer[i].lengthMsdu = 0;
 		ap->buffer[i].timeStamp = 0;
+		//ap->buffer[i].destination = INT_MAX;
 	}
 }
 
@@ -102,6 +106,7 @@ void arriveAp(apInfo *ap, double span){
 						ap->buffer[i].timeStamp = 0;
 					}
 					ap->sumFrameLengthInBuffer += ap->buffer[i].lengthMsdu;
+					//ap->buffer[i].destination = rand() % NUM_STA;
 					fFirst = false;
 				}
 				//ap->waitFrameLength = traffic(false);
@@ -115,6 +120,7 @@ void arriveAp(apInfo *ap, double span){
 					timeSum += ap->timeNextFrame;
 					span -= ap->timeNextFrame;
 					ap->timeNextFrame = poisson(false);
+					//ap->buffer[i].destination = rand() % NUM_STA;
 					if(gSpec.delayMode==0){
 						ap->buffer[i].timeStamp = gElapsedTime + timeSum;
 					}else if(gSpec.delayMode==1){
@@ -131,6 +137,7 @@ void arriveAp(apInfo *ap, double span){
 				ap->sumFrameLengthInBuffer -= ap->buffer[i].lengthMsdu;
 				ap->buffer[i].lengthMsdu = 0;
 				ap->buffer[i].timeStamp = 0.0;
+				//ap->buffer[i].destination = INT_MAX;
 				break;
 			}
 			if(i==BUFFER_SIZE){

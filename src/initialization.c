@@ -4,6 +4,7 @@
 #include "setting.h"
 #include "frameGen.h"
 #include "macro.h"
+#include "limits.h"
 
 extern std11 gStd;
 
@@ -17,6 +18,9 @@ void initializeResult(resultInfo *result){
 	result->aveStaDelay = 0.0;
 	result->apDelay = 0.0;
 	result->aveDelay = 0.0;
+	for(int i=0; i<NUM_STA; i++){
+		result->proUp[i] = 0;
+	}
 }
 
 void initializeNodeInfo(staInfo sta[], apInfo* ap){
@@ -25,6 +29,7 @@ void initializeNodeInfo(staInfo sta[], apInfo* ap){
 	for(i=0; i<BUFFER_SIZE; i++){
 		ap->buffer[i].lengthMsdu = 0;
 		ap->buffer[i].timeStamp = 0.0;
+		//ap->buffer[i].destination = INT_MAX;
 		/*if(ap->sumFrameLengthInBuffer>(gSpec.bufferSizeByte*1000)){
 			ap->waitFrameLength = ap->buffer[i].lengthMsdu;
 			ap->sumFrameLengthInBuffer -= ap->buffer[i].lengthMsdu;
@@ -34,6 +39,7 @@ void initializeNodeInfo(staInfo sta[], apInfo* ap){
 		}*/
 	}
 	ap->buffer[0].lengthMsdu = traffic(false);
+	//ap->buffer[0].destination = rand() % NUM_STA;
 	ap->sumFrameLengthInBuffer = ap->buffer[0].lengthMsdu;
 	ap->waitFrameLength = traffic(false);
 	ap->backoffCount = rand() % (gStd.cwMin + 1);
@@ -95,5 +101,12 @@ void initializeNodeInfo(staInfo sta[], apInfo* ap){
 		sta[i].txPower = 20.0;   //dBm
 		sta[i].antennaGain = 2.0;   //dBi
 		sta[i].timeNextFrame = poisson(true);
+		sta[i].dataRate = gStd.dataRate;
+	}
+}
+
+void initializeDoubleArray(double array[], int sizeArray, double value){
+	for(int i=0; i<sizeArray; i++){
+		array[i] = value;
 	}
 }

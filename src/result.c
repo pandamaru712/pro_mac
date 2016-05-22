@@ -15,6 +15,7 @@ void simulationResult(staInfo sta[], apInfo *ap, resultInfo *result, int trialID
 	long rByteFrameSucc = 0;
 	long rNumPrimFrame = 0;
 	double rDelay = 0.0;
+	double tempColl = 0;
 
 	for(i=0; i<gSpec.numSta; i++){
 		rNumFrameTx += sta[i].numTxFrame;
@@ -34,18 +35,25 @@ void simulationResult(staInfo sta[], apInfo *ap, resultInfo *result, int trialID
 	}
 
 	//printf("%f, %f\n", rDelay, ap->sumDelay);
-
+	for(i=0; i<NUM_STA; i++){
+		tempColl += (double)sta[i].numCollFrame / sta[i].numTxFrame;
+	}
 	result->aveStaThroughput += (double)rByteFrameSucc * 8 / gElapsedTime / gSpec.numSta;
 	result->apThroughput += (double)ap->byteSuccFrame * 8 / gElapsedTime;
 	result->aveThroughput += (double)(rByteFrameSucc + ap->byteSuccFrame) * 8 /gElapsedTime;
 
-	result->aveStaProColl += (double)rNumFrameColl / rNumFrameSucc;
+	result->aveStaProColl += tempColl / NUM_STA;//(double)rNumFrameColl / rNumFrameSucc;
 	//result->apProColl += (double)ap->numCollFrame / ap->numPrimFrame;
 	//result->aveProColl += (double)(rNumFrameColl + ap->numCollFrame) / (rNumPrimFrame + ap->numPrimFrame);
 
 	result->aveStaDelay += rDelay / rNumFrameSucc;
 	result->apDelay += ap->sumDelay / ap->numSuccFrame;
 	result->aveDelay += (rDelay + ap->sumDelay) / (rNumFrameSucc + ap->numSuccFrame);
+
+	for(i=0; i<NUM_STA; i++){
+		//printf("%ld\n", sta[i].numSuccFrame);
+		result->proUp[i] += (double)sta[i].numSuccFrame / rNumFrameSucc;
+	}
 
 	if(trialID==(gSpec.numTrial-1)){
 		printf("STA1台あたりのスループットは%f Mbit/s\n", result->aveStaThroughput / gSpec.numTrial);
@@ -57,6 +65,9 @@ void simulationResult(staInfo sta[], apInfo *ap, resultInfo *result, int trialID
 		printf("STAの平均遅延は%f us\n", result->aveStaDelay / gSpec.numTrial);
 		printf("APの遅延は%f us\n", result->apDelay / gSpec.numTrial);
 		printf("システムの平均遅延は%f us\n", result->aveDelay / gSpec.numTrial);
+		for(i=0; i<NUM_STA; i++){
+			printf("p_u[%d] = %f\n", i, result->proUp[i] / gSpec.numTrial);
+		}
 		if(gSpec.fOutput==true){
 			fprintf(gSpec.output, "\n");
 

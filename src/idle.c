@@ -11,7 +11,7 @@ int upContention(staInfo sta[], bool *fUpColl){
 	int minBackoff = INT_MAX;
 	int i;
 	int numTx = 0;
-	
+
 	for(i=0; i<gSpec.numSta; i++){
 		if((minBackoff>sta[i].backoffCount)&&(sta[i].buffer[0].lengthMsdu!=0)){
 			minBackoff = sta[i].backoffCount;
@@ -23,8 +23,10 @@ int upContention(staInfo sta[], bool *fUpColl){
 		for(i=0; i<gSpec.numSta; i++){
 			if(minBackoff==sta[i].backoffCount){
 				sta[i].fTx = true;
+				sta[i].backoffCount = rand() % (sta[i].cw + 1);
 				numTx++;
 			}else{
+				sta[i].backoffCount -= minBackoff;
 				sta[i].fTx = false;
 			}
 		}

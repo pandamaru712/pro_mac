@@ -58,6 +58,7 @@ typedef struct specification{
 	char filename[100];
 	int areaSize;   //m
 	FILE *output;
+	int SIFC;
 }simSpec;
 
 void simSetting(int, char**);

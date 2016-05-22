@@ -1,10 +1,10 @@
-#ifdef _perMode_h
+#ifndef _perModel_h
 #define _perModel_h
 
 #include "nodeInfo.h"
 #include "setting.h"
 
-void RSSI(apInfo*, staInfo);
+void calculateRSSI(apInfo*, staInfo*);
 double distance(double, double);
-
+//void calculateDelay(staInfo*, bool);
 #endif

@@ -31,7 +31,7 @@ void simSetting(int argc, char **argv){
 	int index;
 
 	gSpec.fDebug = false;
-	gSpec.simTime = 10;
+	gSpec.simTime = 1;   //sec
 	gSpec.fFd = false;
 	gSpec.fOfdma = false;
 	gStd.std = NULL;
@@ -219,4 +219,5 @@ void simSetting(int argc, char **argv){
 
 	gSpec.bufferSizeByte = 200;
 	gSpec.lambdaAp = 0.1;
+	gSpec.SIFC = 100;   //Self-interference cancelation [dB]
 }
