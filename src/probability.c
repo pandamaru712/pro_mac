@@ -85,21 +85,21 @@ void solveLP(){
 	}
 	//printf("\n\n");
 	printf("Optimization terminated.\n");
-	printf("***** Probability *****\n");
+	/*printf("***** Probability *****\n");
 	for(i=0; i<=NUM_STA; i++){
 		for(j=0; j<=NUM_STA; j++){
-			printf("%f,", pro[i][j]);
+			//printf("%f,", pro[i][j]);
 		}
-		printf("\n");
+		//printf("\n");
 	}
 
 	for(i=0; i<yoko; i++){
 		if(p[i]>0.00001){
-			printf("\n   p[%d] = %f\n", i, p[i]);
+			//printf("\n   p[%d] = %f\n", i, p[i]);
 		}
 	}
 	printf("   fval = %f\n", *fval);
-	printf("***** Probability *****\n\n ");
+	printf("***** Probability *****\n\n ");*/
 
 	mxDestroyArray(mx_r);
 	mxDestroyArray(mx_A);
@@ -109,7 +109,7 @@ void solveLP(){
 	mxDestroyArray(mx_lb);
 	mxDestroyArray(mx_p);
 	mxDestroyArray(mx_fval);
-	engEvalString(gEp, "close;");
+	//engEvalString(gEp, "close;");
 }
 
 void calculateProbability(staInfo sta[], apInfo *ap, int mode){
@@ -210,7 +210,7 @@ int selectNode(staInfo sta[], bool *fUpColl, bool *fNoUplink, bool *fNoDownlink)
 	initializeDoubleArray(proTempDown, NUM_STA+1, 0);
 
 	//下り通信を受信する端末の決定
-	printf("***** Probability that each node is selected as a destination node of AP. *****\n");
+	//printf("***** Probability that each node is selected as a destination node of AP. *****\n");
 	for(i=0; i<NUM_STA+1; i++){
 		if(i!=0){
 			proTempDown[i] += proTempDown[i-1];
@@ -219,11 +219,11 @@ int selectNode(staInfo sta[], bool *fUpColl, bool *fNoUplink, bool *fNoDownlink)
 			proDown[i] += pro[i][j];
 		}
 		proTempDown[i] += proDown[i];
-		printf("p_d[%d] is %f.\n", i, proDown[i]);
+		//printf("p_d[%d] is %f.\n", i, proDown[i]);
 	}
 
-	if(proTempDown[NUM_STA]!=1){
-		printf("Probability is wrong.\n");
+	if(proTempDown[NUM_STA]<=0.999 || 1.001<=proTempDown[NUM_STA]){
+		printf("Probability is wrong.%f\n", proTempDown[NUM_STA]);
 	}
 
 	downRand = (double)rand() / RAND_MAX;
@@ -232,30 +232,32 @@ int selectNode(staInfo sta[], bool *fUpColl, bool *fNoUplink, bool *fNoDownlink)
 		if(i==0){
 			if(downRand<=proTempDown[i]){
 				downNode = i;
-				printf("Dummy STA is selected as a destination node.\n");
+				//printf("Dummy STA is selected as a destination node.\n");
 				*fNoDownlink = true;
 				break;
 			}
 		}else if(proTempDown[i-1]<downRand && downRand<=proTempDown[i]){
 			downNode = i;
 			sta[i-1].fRx = true;
-			printf("STA %d is selected as a destination node.\n", i-1);
+			//printf("STA %d is selected as a destination node.\n", i-1);
 			break;
 		}
 		if(i==NUM_STA){
 			printf("Error. downRand = %f\n", downRand);
+			downNode = 0;
+			*fNoDownlink = true;
 		}
 	}
 
 	//上り通信端末の選択
-	printf("***** Probabiliy that each node is selected as a source node of AP. *****\n");
+	//printf("***** Probabiliy that each node is selected as a source node of AP. *****\n");
 	for(j=0; j<NUM_STA+1; j++){
 		if(downNode==j){
 			proUp[j] = 0;
 		}else{
 			proUp[j] = pro[downNode][j]/proDown[downNode];
 		}
-		printf("p_u[%d] is %f\n", j, proUp[j]);
+		//printf("p_u[%d] is %f\n", j, proUp[j]);
 	}
 
 	for(i=0; i<NUM_STA+1; i++){
@@ -276,20 +278,20 @@ int selectNode(staInfo sta[], bool *fUpColl, bool *fNoUplink, bool *fNoDownlink)
 			}
 		}
 	}
+	if(minBackoff==INT_MAX){
+		printf("All STAs don't have a frame.\n");   //フレームが無いときだけじゃないかも
+	}
 	if(dummyNode<minBackoff){
 		minBackoff = dummyNode;
 		*fNoUplink = true;
-	}
-	if(minBackoff==INT_MAX){
-		printf("All STAs don't have a frame.\n");   //フレームが無いときだけじゃないかも
 	}else{
 		if(*fNoUplink==false){
 			for(i=0; i<gSpec.numSta; i++){
 				if(proUp[i+1]!=0 && minBackoff==sta[i].backoffCount && sta[i].fRx==false){
 					sta[i].fTx = true;
-					sta[i].backoffCount = rand() % (sta[i].cw + 1);
+					//sta[i].backoffCount = rand() % (sta[i].cw + 1);
 					numTx++;
-					printf("STA %d has minimum backoff count.\n", i);
+					//printf("STA %d has minimum backoff count.\n", i);
 				}else{
 					//sta[i].backoffCount -= minBackoff;
 					sta[i].fTx = false;
@@ -299,7 +301,7 @@ int selectNode(staInfo sta[], bool *fUpColl, bool *fNoUplink, bool *fNoDownlink)
 			sta[i].fTx = false;
 		}
 	}
-	if(numTx==0 && *fNoUplink==true){
+	if(numTx==0 && *fNoUplink==false){
 		printf("undefined\n");
 	}else if(numTx==1){
 		*fUpColl = false;

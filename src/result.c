@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "result.h"
+#include "macro.h"
 
 extern double gElapsedTime;
 extern simSpec gSpec;
@@ -41,8 +42,8 @@ void simulationResult(staInfo sta[], apInfo *ap, resultInfo *result, int trialID
 	result->aveStaThroughput += (double)rByteFrameSucc * 8 / gElapsedTime / gSpec.numSta;
 	result->apThroughput += (double)ap->byteSuccFrame * 8 / gElapsedTime;
 	result->aveThroughput += (double)(rByteFrameSucc + ap->byteSuccFrame) * 8 /gElapsedTime;
-
-	result->aveStaProColl += tempColl / NUM_STA;//(double)rNumFrameColl / rNumFrameSucc;
+	//printf("%f", tempColl/gSpec.numSta);
+	result->aveStaProColl += tempColl / gSpec.numSta;//(double)rNumFrameColl / rNumFrameSucc;
 	//result->apProColl += (double)ap->numCollFrame / ap->numPrimFrame;
 	//result->aveProColl += (double)(rNumFrameColl + ap->numCollFrame) / (rNumPrimFrame + ap->numPrimFrame);
 
@@ -66,7 +67,7 @@ void simulationResult(staInfo sta[], apInfo *ap, resultInfo *result, int trialID
 		printf("APの遅延は%f us\n", result->apDelay / gSpec.numTrial);
 		printf("システムの平均遅延は%f us\n", result->aveDelay / gSpec.numTrial);
 		for(i=0; i<NUM_STA; i++){
-			printf("p_u[%d] = %f\n", i, result->proUp[i] / gSpec.numTrial);
+			//printf("p_u[%d] = %f\n", i, result->proUp[i] / gSpec.numTrial);
 		}
 		if(gSpec.fOutput==true){
 			fprintf(gSpec.output, "\n");

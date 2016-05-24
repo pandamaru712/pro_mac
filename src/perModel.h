@@ -6,5 +6,5 @@
 
 void calculateRSSI(apInfo*, staInfo*);
 double distance(double, double);
-//void calculateDelay(staInfo*, bool);
+void calculateDelay(staInfo*);
 #endif

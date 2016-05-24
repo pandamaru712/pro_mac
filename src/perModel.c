@@ -4,6 +4,7 @@
 
 #include "nodeInfo.h"
 #include "perModel.h"
+#include "limits.h"
 
 extern double r[(NUM_STA+1)*(NUM_STA+1)];
 
@@ -63,4 +64,17 @@ void calculateRSSI(apInfo *ap, staInfo sta[]){
 		printf("\n");
 	}
 	printf("***** Rate Matrix *****\n\n");
+}
+
+void calculateDelay(staInfo sta[]){
+	double delay[NUM_STA+1] = {};
+	int i;
+	double temp;
+
+	for(i=1; i<=NUM_STA; i++){
+		if(sta[i-1].numSuccFrame==0){
+
+		}
+		//delay[i] = 
+	}
 }

@@ -7,10 +7,8 @@
 #include "setting.h"
 #include "initialization.h"
 #include "success.h"
-#include "collision.h"
 #include "idle.h"
 #include "result.h"
-#include "debug.h"
 #include "macro.h"
 #include "probability.h"
 #include "success.h"
@@ -64,11 +62,6 @@ int main(int argc, char *argv[]){
 	resultInfo result;
 	//Intialize result information.
 	initializeResult(&result);
-	if(gSpec.fDebug==true){
-		debug();
-		//printf("End debug.\n");
-		//exit(99);
-	}
 
 	int numTx = 0;
 	int trialID;
@@ -76,9 +69,12 @@ int main(int argc, char *argv[]){
 	double lastBeacon = 0;
 
 	for (trialID=0; trialID<gSpec.numTrial; trialID++){
+		printf("\n***** No. %d *****\n", trialID);
+		gElapsedTime = 0;
 		srand(trialID);
 		numTx = 0;
 		fEmpty = false;
+		lastBeacon = 0;
 		initializeNodeInfo(sta, &ap);
 		initializeMatrix();
 		printf("Initialization NodeInfo and Matrix.\n");
@@ -88,39 +84,11 @@ int main(int argc, char *argv[]){
 			transmission(sta, &ap);
 
 			if(lastBeacon+100000<gElapsedTime){
-				//calculateProbability(sta, 1);
+				//calculateProbability(sta, &ap, 1);
 				lastBeacon = gElapsedTime;
 			}
 		}
 
-		/*gElapsedTime = (double)gStd.difs;
-		idle(sta, &ap, &numTx, &fEmpty);
-		//Wrong? fEmpty=true?
-
-		for(; gElapsedTime<gSpec.simTime*1000000;){
-			if(numTx==1){
-				//debugSta(&sta[7],7);
-				txSuccess(sta, &ap, &numTx);
-				fEmpty = true;
-				for(int i=0; i<gSpec.numSta; i++){
-					if(sta[i].buffer[0].lengthMsdu!=0){
-						fEmpty = false;
-						break;
-					}
-				}
-				if(ap.buffer[0].lengthMsdu!=0){
-					fEmpty = false;
-				}
-				if(fEmpty==true){
-					idle(sta, &ap, &numTx, &fEmpty);
-				}else{
-					afterSuccess(sta, &ap, &numTx);
-				}
-			}else{
-				txCollision(sta, &ap);
-				afterCollision(sta, &ap, &numTx);
-			}
-		}*/
 		simulationResult(sta, &ap, &result, trialID);
 	}
 
@@ -131,6 +99,7 @@ int main(int argc, char *argv[]){
 	free(sta);
 	printf("Free memory space.\n");
 
+	engEvalString(gEp, "close;");
 	engClose(gEp);
 	printf("Close MATLAB.\nFinish.\n");
 	return 0;
