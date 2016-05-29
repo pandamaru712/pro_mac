@@ -21,6 +21,9 @@ void initializeResult(resultInfo *result){
 	for(int i=0; i<NUM_STA; i++){
 		result->proUp[i] = 0;
 	}
+	result->proSucc = 0;
+	result->proColl = 0;
+	result->aveTotalTime = 0;
 }
 
 void initializeNodeInfo(staInfo sta[], apInfo* ap){
@@ -63,6 +66,7 @@ void initializeNodeInfo(staInfo sta[], apInfo* ap){
 	ap->txPower = 20.0;
 	ap->antennaGain = 2.0;
 	ap->timeNextFrame = poisson(false);
+	ap->dataRate = gStd.dataRate;
 
 	for(i=0; i<gSpec.numSta; i++){
 		for(j=0; j<BUFFER_SIZE; j++){
@@ -95,14 +99,20 @@ void initializeNodeInfo(staInfo sta[], apInfo* ap){
 		sta[i].fTx = false;
 		//sta[i].sumFrameLengthInBuffer = 0;
 		sta[i].sumDelay = 0.0;
-		sta[i].x = (double)rand() / RAND_MAX * gSpec.areaSize;
-		sta[i].y = (double)rand() / RAND_MAX * gSpec.areaSize;
+		sta[i].x = (double)rand() / RAND_MAX * gSpec.areaSize - (double)gSpec.areaSize / 2;
+		sta[i].y = (double)rand() / RAND_MAX * gSpec.areaSize - (double)gSpec.areaSize / 2;
+		printf("%f, %f\n", sta[i].x, sta[i].y);
 		sta[i].distanceAp = sqrt(pow(sta[i].x, 2)+pow(sta[i].y, 2));
 		sta[i].txPower = 20.0;   //dBm
 		sta[i].antennaGain = 2.0;   //dBi
 		sta[i].timeNextFrame = poisson(true);
 		sta[i].dataRate = gStd.dataRate;
 	}
+
+	gSpec.chance = 0;
+	gSpec.succ = 0;
+	gSpec.coll = 0;
+	gSpec.sumTotalTime = 0;
 }
 
 void initializeDoubleArray(double array[], int sizeArray, double value){

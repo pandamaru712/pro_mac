@@ -80,8 +80,12 @@ void solveLP(){
 	fval = mxGetPr(mx_fval);
 
 	for(i=0; i<yoko; i++){
-		pro[i/(NUM_STA+1)][i%(NUM_STA+1)] = p[i];
-		//printf("%f,", p[i]);
+		if(p[i]>=0.000001){
+			pro[i/(NUM_STA+1)][i%(NUM_STA+1)] = p[i];
+			//printf("%f,", p[i]);
+		}else{
+			pro[i/(NUM_STA+1)][i%(NUM_STA+1)] = 0;
+		}
 	}
 	//printf("\n\n");
 	printf("Optimization terminated.\n");
@@ -144,7 +148,9 @@ void initializeMatrix(){
 			}else{
 				dummyA[i][j] = 0;
 			}
+			//printf("%f ", dummyA[i][j]);
 		}
+		//printf("\n");
 	}
 	for(i=NUM_STA; i<NUM_STA*2; i++){
 		for(j=0; j<yoko; j++){
@@ -153,7 +159,9 @@ void initializeMatrix(){
 			}else{
 				dummyA[i][j] = 0;
 			}
+			//printf("%f ", dummyA[i][j]);
 		}
+		//printf("\n");
 	}
 	for(j=0; j<yoko; j++){
 		for(i=0; i<tate; i++){
@@ -190,14 +198,14 @@ void initializeMatrix(){
 	}
 }
 
-int selectNode(staInfo sta[], bool *fUpColl, bool *fNoUplink, bool *fNoDownlink){
+int selectNode(staInfo sta[], bool *fUpColl, bool *fNoUplink, bool *fNoDownlink, int *upNode, int *downNode){
 	double *proDown;
 	proDown = (double*)malloc(sizeof(double)*(NUM_STA+1));// = {};
 	double *proUp;
 	proUp = (double*)malloc(sizeof(double)*(NUM_STA+1));// = {};
 	double *proTempDown;
 	proTempDown = (double*)malloc(sizeof(double)*(NUM_STA+1));// = {};   //確率判定のため
-	int upNode, downNode;   //0がなし．1--NUM_STAまで．配列とずれてるから注意．
+	//int upNode, downNode;   //0がなし．1--NUM_STAまで．配列とずれてるから注意．
 	double downRand;
 	int i, j;
 	int numTx = 0;
@@ -219,7 +227,7 @@ int selectNode(staInfo sta[], bool *fUpColl, bool *fNoUplink, bool *fNoDownlink)
 			proDown[i] += pro[i][j];
 		}
 		proTempDown[i] += proDown[i];
-		//printf("p_d[%d] is %f.\n", i, proDown[i]);
+		printf("p_d[%d] is %f.\n", i, proTempDown[i]);
 	}
 
 	if(proTempDown[NUM_STA]<=0.999 || 1.001<=proTempDown[NUM_STA]){
@@ -231,20 +239,20 @@ int selectNode(staInfo sta[], bool *fUpColl, bool *fNoUplink, bool *fNoDownlink)
 	for(i=0; i<=NUM_STA; i++){
 		if(i==0){
 			if(downRand<=proTempDown[i]){
-				downNode = i;
+				*downNode = i;
 				//printf("Dummy STA is selected as a destination node.\n");
 				*fNoDownlink = true;
 				break;
 			}
 		}else if(proTempDown[i-1]<downRand && downRand<=proTempDown[i]){
-			downNode = i;
+			*downNode = i;
 			sta[i-1].fRx = true;
 			//printf("STA %d is selected as a destination node.\n", i-1);
 			break;
 		}
 		if(i==NUM_STA){
 			printf("Error. downRand = %f\n", downRand);
-			downNode = 0;
+			*downNode = 0;
 			*fNoDownlink = true;
 		}
 	}
@@ -252,10 +260,13 @@ int selectNode(staInfo sta[], bool *fUpColl, bool *fNoUplink, bool *fNoDownlink)
 	//上り通信端末の選択
 	//printf("***** Probabiliy that each node is selected as a source node of AP. *****\n");
 	for(j=0; j<NUM_STA+1; j++){
-		if(downNode==j){
+		if(*downNode==j){
 			proUp[j] = 0;
 		}else{
-			proUp[j] = pro[downNode][j]/proDown[downNode];
+			proUp[j] = pro[*downNode][j]/proDown[*downNode];
+			//if(proUp[j]<0.000001){
+				//printf("%f, %f ", pro[*downNode][j], proDown[*downNode]);
+			//}*/
 		}
 		//printf("p_u[%d] is %f\n", j, proUp[j]);
 	}
@@ -267,9 +278,12 @@ int selectNode(staInfo sta[], bool *fUpColl, bool *fNoUplink, bool *fNoDownlink)
 			}else{
 				sta[i-1].cw = (int)(1/proUp[i]);
 				sta[i-1].backoffCount = rand() % (sta[i-1].cw+1);
+				//printf("%f, %d ", proUp[i], sta[i-1].backoffCount);
+				//printf("%f, %d,, ", proUp[i], sta[i-1].cw);
 			}
 		}
 	}
+	//printf("\n\n");
 
 	for(i=0; i<gSpec.numSta; i++){
 		if(proUp[i+1]!=0){
@@ -278,12 +292,14 @@ int selectNode(staInfo sta[], bool *fUpColl, bool *fNoUplink, bool *fNoDownlink)
 			}
 		}
 	}
+	//printf("%d, ", minBackoff);
 	if(minBackoff==INT_MAX){
 		printf("All STAs don't have a frame.\n");   //フレームが無いときだけじゃないかも
 	}
 	if(dummyNode<minBackoff){
 		minBackoff = dummyNode;
 		*fNoUplink = true;
+		*upNode = 0;
 	}else{
 		if(*fNoUplink==false){
 			for(i=0; i<gSpec.numSta; i++){
@@ -291,6 +307,7 @@ int selectNode(staInfo sta[], bool *fUpColl, bool *fNoUplink, bool *fNoDownlink)
 					sta[i].fTx = true;
 					//sta[i].backoffCount = rand() % (sta[i].cw + 1);
 					numTx++;
+					*upNode = i+1;
 					//printf("STA %d has minimum backoff count.\n", i);
 				}else{
 					//sta[i].backoffCount -= minBackoff;

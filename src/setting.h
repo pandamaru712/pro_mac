@@ -58,7 +58,13 @@ typedef struct specification{
 	char filename[100];
 	int areaSize;   //m
 	FILE *output;
-	int SIFC;
+	double SIC;   //Self-interference cancekation
+	double ICIth;   //Inter-client interference threshold
+	double noise;
+	int chance;
+	int succ;
+	int coll;
+	long sumTotalTime;
 }simSpec;
 
 void simSetting(int, char**);

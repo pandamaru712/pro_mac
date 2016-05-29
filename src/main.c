@@ -41,11 +41,6 @@ int main(int argc, char *argv[]){
 	//checkOption(argc, argv);
 	//Apply option values to simulation settings.
 	printf("Start simulation.\n");
-	if(!(gEp = engOpen(""))){
-		fprintf(stderr, "\nCan't start MATLAB engine.\n");
-		return EXIT_FAILURE;
-	}
-	printf("Open MATLAB engine.\n");
 
 	simSetting(argc,argv);
 	printf("Set simulation parameters.\n");
@@ -67,6 +62,12 @@ int main(int argc, char *argv[]){
 	int trialID;
 	bool fEmpty = false;
 	double lastBeacon = 0;
+
+	if(!(gEp = engOpen(""))){
+		fprintf(stderr, "\nCan't start MATLAB engine.\n");
+		return EXIT_FAILURE;
+	}
+	printf("Open MATLAB engine.\n");
 
 	for (trialID=0; trialID<gSpec.numTrial; trialID++){
 		printf("\n***** No. %d *****\n", trialID);

@@ -65,6 +65,7 @@ typedef struct apInformation{
 	double txPower;
 	double antennaGain;
 	double timeNextFrame;
+	double dataRate;
 }apInfo;
 
 #endif

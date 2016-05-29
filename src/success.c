@@ -7,10 +7,20 @@
 #include "idle.h"
 #include "probability.h"
 #include "limits.h"
+#include "perModel.h"
 
 extern double gElapsedTime;
 extern simSpec gSpec;
 extern std11 gStd;
+
+int timeFrameLength(int byteLength, double dataRate){
+	int timeLength;
+
+	timeLength = gStd.phyHeader + 4 * ((gStd.macService + 8* (gStd.macHeader + byteLength + gStd.macFcs) + gStd.macTail + (4 * gStd.dataRate - 1)) / (4 * dataRate));
+	//printf("%d\n", timeLength);
+
+	return timeLength;
+}
 
 void transmission(staInfo sta[], apInfo *ap){
 	/*
@@ -22,14 +32,21 @@ void transmission(staInfo sta[], apInfo *ap){
 	bool fNoDownlink = false;
 	int minBackoff;
 	int i;
-	int txFrameLength = 0;
-	int txTimeFrameLength;
-	int totalTime;
+	//int txFrameLength = 0;
+	//int txTimeFrameLength;
+	double totalTime = 0;
+	int upNode, downNode;
 	//int rxSta = INT_MAX;
-	minBackoff = selectNode(sta, &fUpColl, &fNoUplink, &fNoDownlink);
+	int apLength = 0;
+	int staLength = 0;
+	minBackoff = selectNode(sta, &fUpColl, &fNoUplink, &fNoDownlink, &upNode, &downNode);
+
+	gSpec.chance++;
 
 	if(fNoUplink==true && fNoDownlink==true){
 		printf("Error! (106)\n");
+	}else{
+		calculatePhyRate(ap, sta, &upNode, &downNode, fUpColl);
 	}
 
 	if(fUpColl==false){
@@ -37,7 +54,8 @@ void transmission(staInfo sta[], apInfo *ap){
 		if(fNoDownlink==false){
 			ap->sumFrameLengthInBuffer -= ap->buffer[0].lengthMsdu;
 			ap->byteSuccFrame += ap->buffer[0].lengthMsdu;
-			txFrameLength = ap->buffer[0].lengthMsdu;
+			//txFrameLength = ap->buffer[0].lengthMsdu;
+			apLength = timeFrameLength(ap->buffer[0].lengthMsdu, ap->dataRate);
 			/*if(txFrameLength<ap->buffer[0].lengthMsdu){
 				txFrameLength = ap->buffer[0].lengthMsdu;
 			}*/
@@ -51,15 +69,17 @@ void transmission(staInfo sta[], apInfo *ap){
 		}
 
 		if(fNoUplink==false){
+			gSpec.succ++;
 			for(i=0; i<gSpec.numSta; i++){
 				if(sta[i].fTx==true){
 					//sta[i].backoffCount = rand() % (sta[i].cw + 1);
 					sta[i].fTx = false;
 					sta[i].sumFrameLengthInBuffer -= sta[i].buffer[0].lengthMsdu;
 					sta[i].byteSuccFrame += sta[i].buffer[0].lengthMsdu;
-					if(txFrameLength<sta[i].buffer[0].lengthMsdu){
+					staLength = timeFrameLength(sta[i].buffer[0].lengthMsdu, sta[i].dataRate);
+					/*if(txFrameLength<sta[i].buffer[0].lengthMsdu){
 						txFrameLength = sta[i].buffer[0].lengthMsdu;
-					}
+					}*/
 					sta[i].buffer[0].lengthMsdu = 0;
 					//printf("%f\n", sta[i].buffer[0].timeStamp);
 					sta[i].sumDelay += (gElapsedTime - sta[i].buffer[0].timeStamp);
@@ -75,20 +95,30 @@ void transmission(staInfo sta[], apInfo *ap){
 				}
 			}
 		}
-		txTimeFrameLength = gStd.phyHeader + 4 * ((gStd.macService + 8* (gStd.macHeader + txFrameLength + gStd.macFcs) + gStd.macTail + (4 * gStd.dataRate - 1)) / (4 * gStd.dataRate));
-		totalTime = (double)minBackoff * gStd.slot + txTimeFrameLength + gStd.sifs + gStd.timeAck;
-		gElapsedTime += (double)totalTime;
-		arriveAp(ap, (double)totalTime);
+		//txTimeFrameLength = gStd.phyHeader + 4 * ((gStd.macService + 8* (gStd.macHeader + txFrameLength + gStd.macFcs) + gStd.macTail + (4 * gStd.dataRate - 1)) / (4 * gStd.dataRate));
+		if(apLength==0&&staLength==0){
+			printf("Frame length error.\n");
+		}else if(apLength<=staLength){
+			totalTime = (double)minBackoff * gStd.slot + staLength + gStd.sifs + gStd.timeAck;
+		}else{
+			totalTime = (double)minBackoff * gStd.slot + apLength + gStd.sifs + gStd.timeAck;
+		}
+		gElapsedTime += totalTime;
+		gSpec.sumTotalTime += totalTime;
+		arriveAp(ap, totalTime);
 		for(i=0; i<gSpec.numSta; i++){
-			arriveSta(&sta[i], (double)totalTime);
+			arriveSta(&sta[i], totalTime);
 			sta[i].fRx = false;
+			sta[i].fTx = false;
 		}
 	}else{
 		//Uplink failed.
+		gSpec.coll++;
 		if(fNoDownlink==false){
 			ap->sumFrameLengthInBuffer -= ap->buffer[0].lengthMsdu;
 			ap->byteSuccFrame += ap->buffer[0].lengthMsdu;
-			txFrameLength = ap->buffer[0].lengthMsdu;
+			//txFrameLength = ap->buffer[0].lengthMsdu;
+			apLength = timeFrameLength(ap->buffer[0].lengthMsdu, ap->dataRate);
 			/*if(txFrameLength<ap->buffer[0].lengthMsdu){
 				txFrameLength = ap->buffer[0].lengthMsdu;
 			}*/
@@ -106,9 +136,12 @@ void transmission(staInfo sta[], apInfo *ap){
 				sta[i].fTx = false;
 				sta[i].numTxFrame++;
 				sta[i].numCollFrame++;
-				if(txFrameLength<sta[i].buffer[0].lengthMsdu){
-					txFrameLength = sta[i].buffer[0].lengthMsdu;
+				if(staLength<timeFrameLength(sta[i].buffer[0].lengthMsdu, sta[i].dataRate)){
+					staLength = timeFrameLength(sta[i].buffer[0].lengthMsdu, sta[i].dataRate);
 				}
+				/*if(txFrameLength<sta[i].buffer[0].lengthMsdu){
+					txFrameLength = sta[i].buffer[0].lengthMsdu;
+				}*/
 			}else{
 				sta[i].fTx = false;
 				/*if((sta[i].buffer[0].lengthMsdu!=0)&&(sta[i].backoffCount!=0)){
@@ -117,13 +150,22 @@ void transmission(staInfo sta[], apInfo *ap){
 				}*/
 			}
 		}
-		txTimeFrameLength = gStd.phyHeader + 4 * ((gStd.macService + 8* (gStd.macHeader + txFrameLength + gStd.macFcs) + gStd.macTail + (4 * gStd.dataRate - 1)) / (4 * gStd.dataRate));
+		if(apLength==0&&staLength==0){
+			printf("Frame length error.\n");
+		}else if(apLength<=staLength){
+			totalTime = (double)minBackoff * gStd.slot + staLength + gStd.sifs + gStd.timeAck;
+		}else{
+			totalTime = (double)minBackoff * gStd.slot + apLength + gStd.sifs + gStd.timeAck;
+		}
+		//txTimeFrameLength = gStd.phyHeader + 4 * ((gStd.macService + 8* (gStd.macHeader + txFrameLength + gStd.macFcs) + gStd.macTail + (4 * gStd.dataRate - 1)) / (4 * gStd.dataRate));
 		//totalTime = txTimeFrameLength + gStd.sifs + gStd.timeAck;
-		gElapsedTime += (double)txTimeFrameLength + (double)minBackoff*gStd.slot;
-		arriveAp(ap, (double)txTimeFrameLength);
+		gElapsedTime += totalTime;
+		gSpec.sumTotalTime += totalTime;
+		arriveAp(ap, totalTime);
 		for(i=0; i<gSpec.numSta; i++){
-			arriveSta(&sta[i], (double)txTimeFrameLength);
+			arriveSta(&sta[i], totalTime);
 			sta[i].fRx = false;
+			sta[i].fTx = false;
 		}
 	}
 }

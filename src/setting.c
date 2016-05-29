@@ -219,5 +219,7 @@ void simSetting(int argc, char **argv){
 
 	gSpec.bufferSizeByte = 200;
 	gSpec.lambdaAp = 0.1;
-	gSpec.SIFC = 100;   //Self-interference cancelation [dB]
+	gSpec.SIC = 110;   //Self-interference cancelation [dB]
+	gSpec.ICIth = 5;
+	gSpec.noise = -91.63;
 }

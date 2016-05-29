@@ -51,6 +51,9 @@ void simulationResult(staInfo sta[], apInfo *ap, resultInfo *result, int trialID
 	result->apDelay += ap->sumDelay / ap->numSuccFrame;
 	result->aveDelay += (rDelay + ap->sumDelay) / (rNumFrameSucc + ap->numSuccFrame);
 
+	result->proColl += (double)gSpec.coll / gSpec.chance;
+	result->aveTotalTime += (double)gSpec.sumTotalTime / gSpec.chance;
+
 	for(i=0; i<NUM_STA; i++){
 		//printf("%ld\n", sta[i].numSuccFrame);
 		result->proUp[i] += (double)sta[i].numSuccFrame / rNumFrameSucc;
@@ -61,6 +64,8 @@ void simulationResult(staInfo sta[], apInfo *ap, resultInfo *result, int trialID
 		printf("APのスループットは%f Mbit/s\n", result->apThroughput / gSpec.numTrial);
 		printf("システムスループットは%f Mbit/s\n", result->aveThroughput / gSpec.numTrial);
 		printf("STAの平均衝突率は%f \n", result->aveStaProColl / gSpec.numTrial);
+		printf("%f, %d, %d\n", result->proColl / gSpec.numTrial, gSpec.coll, gSpec.chance);
+		printf("%f\n", result->aveTotalTime / gSpec.numTrial);
 		//printf("APの衝突率は%f \n", result->apProColl / gSpec.numTrial);
 		//printf("システムの平均衝突率は%f \n", result->aveProColl / gSpec.numTrial);
 		printf("STAの平均遅延は%f us\n", result->aveStaDelay / gSpec.numTrial);

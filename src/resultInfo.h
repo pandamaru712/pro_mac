@@ -14,6 +14,9 @@ typedef struct resultInformation{
 	double apDelay;
 	double aveDelay;
 	double proUp[NUM_STA];
+	double proSucc;
+	double proColl;
+	double aveTotalTime;
 }resultInfo;
 
 #endif

@@ -5,6 +5,7 @@
 #include "setting.h"
 
 void calculateRSSI(apInfo*, staInfo*);
-double distance(double, double);
+double distance(staInfo*, int, int);
 void calculateDelay(staInfo*);
+void calculatePhyRate(apInfo*, staInfo* /*, int*, int*, bool*/);
 #endif
