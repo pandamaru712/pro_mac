@@ -119,6 +119,7 @@ void solveLP(){
 void calculateProbability(staInfo sta[], apInfo *ap, int mode){
 	int nodeID;
 	int i;
+	double delay[NUM_STA+1] = {};
 	if(mode == 0){   //random
 		nodeID = rand() % gSpec.numSta;
 		for(i=0; i<gSpec.numSta; i++){
@@ -129,8 +130,11 @@ void calculateProbability(staInfo sta[], apInfo *ap, int mode){
 			}
 		}
 	}else{   //probability
-		calculateRSSI(ap, sta);
 		//calculateDelay
+		if(PRO_MODE==1||PRO_MODE==2){
+			calculateDelay(ap, sta, delay);
+		}
+		calculateRSSI(ap, sta, delay);
 		solveLP();
 		//selectNode(sta, fUpColl, fNoUplink);
 	}
@@ -227,7 +231,7 @@ int selectNode(staInfo sta[], bool *fUpColl, bool *fNoUplink, bool *fNoDownlink,
 			proDown[i] += pro[i][j];
 		}
 		proTempDown[i] += proDown[i];
-		printf("p_d[%d] is %f.\n", i, proTempDown[i]);
+		//printf("p_d[%d] is %f.\n", i, proTempDown[i]);
 	}
 
 	if(proTempDown[NUM_STA]<=0.999 || 1.001<=proTempDown[NUM_STA]){
@@ -278,7 +282,7 @@ int selectNode(staInfo sta[], bool *fUpColl, bool *fNoUplink, bool *fNoDownlink,
 			}else{
 				sta[i-1].cw = (int)(1/proUp[i]);
 				sta[i-1].backoffCount = rand() % (sta[i-1].cw+1);
-				//printf("%f, %d ", proUp[i], sta[i-1].backoffCount);
+				printf("%f, %d ", proUp[i], sta[i-1].backoffCount);
 				//printf("%f, %d,, ", proUp[i], sta[i-1].cw);
 			}
 		}

@@ -4,8 +4,8 @@
 #include "nodeInfo.h"
 #include "setting.h"
 
-void calculateRSSI(apInfo*, staInfo*);
+void calculateRSSI(apInfo*, staInfo*, double*);
 double distance(staInfo*, int, int);
-void calculateDelay(staInfo*);
-void calculatePhyRate(apInfo*, staInfo* /*, int*, int*, bool*/);
+void calculateDelay(apInfo*, staInfo*, double*);
+void calculatePhyRate(apInfo*, staInfo*, int*, int*);
 #endif

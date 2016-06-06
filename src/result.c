@@ -56,7 +56,8 @@ void simulationResult(staInfo sta[], apInfo *ap, resultInfo *result, int trialID
 
 	for(i=0; i<NUM_STA; i++){
 		//printf("%ld\n", sta[i].numSuccFrame);
-		result->proUp[i] += (double)sta[i].numSuccFrame / rNumFrameSucc;
+		//result->proUp[i] += (double)sta[i].numSuccFrame / rNumFrameSucc;
+		//printf("%ld\n", sta[i].numTxFrame);
 	}
 
 	if(trialID==(gSpec.numTrial-1)){
@@ -71,9 +72,9 @@ void simulationResult(staInfo sta[], apInfo *ap, resultInfo *result, int trialID
 		printf("STAの平均遅延は%f us\n", result->aveStaDelay / gSpec.numTrial);
 		printf("APの遅延は%f us\n", result->apDelay / gSpec.numTrial);
 		printf("システムの平均遅延は%f us\n", result->aveDelay / gSpec.numTrial);
-		for(i=0; i<NUM_STA; i++){
-			//printf("p_u[%d] = %f\n", i, result->proUp[i] / gSpec.numTrial);
-		}
+		/*for(i=0; i<NUM_STA; i++){
+			printf("p_u[%d] = %f\n", i, sta[i].sumDelay / sta[i].numSuccFrame);
+		}*/
 		if(gSpec.fOutput==true){
 			fprintf(gSpec.output, "\n");
 

@@ -19,6 +19,8 @@ int timeFrameLength(int byteLength, double dataRate){
 	timeLength = gStd.phyHeader + 4 * ((gStd.macService + 8* (gStd.macHeader + byteLength + gStd.macFcs) + gStd.macTail + (4 * gStd.dataRate - 1)) / (4 * dataRate));
 	//printf("%d\n", timeLength);
 
+	printf("%d\n", timeLength);
+
 	return timeLength;
 }
 
@@ -40,13 +42,14 @@ void transmission(staInfo sta[], apInfo *ap){
 	int apLength = 0;
 	int staLength = 0;
 	minBackoff = selectNode(sta, &fUpColl, &fNoUplink, &fNoDownlink, &upNode, &downNode);
+	//printf("%d\n", minBackoff);
 
 	gSpec.chance++;
 
 	if(fNoUplink==true && fNoDownlink==true){
 		printf("Error! (106)\n");
 	}else{
-		calculatePhyRate(ap, sta, &upNode, &downNode, fUpColl);
+		calculatePhyRate(ap, sta, &upNode, &downNode);
 	}
 
 	if(fUpColl==false){

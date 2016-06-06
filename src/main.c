@@ -71,7 +71,7 @@ int main(int argc, char *argv[]){
 
 	for (trialID=0; trialID<gSpec.numTrial; trialID++){
 		printf("\n***** No. %d *****\n", trialID);
-		gElapsedTime = 0;
+		gElapsedTime = gStd.difs;
 		srand(trialID);
 		numTx = 0;
 		fEmpty = false;
@@ -85,7 +85,9 @@ int main(int argc, char *argv[]){
 			transmission(sta, &ap);
 
 			if(lastBeacon+100000<gElapsedTime){
-				//calculateProbability(sta, &ap, 1);
+				if(PRO_MODE==1 || PRO_MODE==2){
+					calculateProbability(sta, &ap, 1);
+			}
 				lastBeacon = gElapsedTime;
 			}
 		}
