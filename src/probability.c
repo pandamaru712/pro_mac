@@ -86,15 +86,16 @@ void solveLP(){
 		}else{
 			pro[i/(NUM_STA+1)][i%(NUM_STA+1)] = 0;
 		}
+		//printf("%f, ", p[i]);
 	}
 	//printf("\n\n");
 	printf("Optimization terminated.\n");
-	/*printf("***** Probability *****\n");
+	printf("***** Probability *****\n");
 	for(i=0; i<=NUM_STA; i++){
 		for(j=0; j<=NUM_STA; j++){
-			//printf("%f,", pro[i][j]);
+			printf("%f,", pro[i][j]);
 		}
-		//printf("\n");
+		printf("\n");
 	}
 
 	for(i=0; i<yoko; i++){
@@ -103,7 +104,7 @@ void solveLP(){
 		}
 	}
 	printf("   fval = %f\n", *fval);
-	printf("***** Probability *****\n\n ");*/
+	printf("***** Probability *****\n\n ");
 
 	mxDestroyArray(mx_r);
 	mxDestroyArray(mx_A);
@@ -131,7 +132,7 @@ void calculateProbability(staInfo sta[], apInfo *ap, int mode){
 		}
 	}else{   //probability
 		//calculateDelay
-		if(PRO_MODE==1||PRO_MODE==2){
+		if(gSpec.proMode==1||gSpec.proMode==2){
 			calculateDelay(ap, sta, delay);
 		}
 		calculateRSSI(ap, sta, delay);
@@ -274,7 +275,8 @@ int selectNode(staInfo sta[], bool *fUpColl, bool *fNoUplink, bool *fNoDownlink,
 		}
 		//printf("p_u[%d] is %f\n", j, proUp[j]);
 	}
-
+	//printf("\n\n");
+	//int temp = 0;
 	for(i=0; i<NUM_STA+1; i++){
 		if(proUp[i]!=0){
 			if(i==0){
@@ -282,11 +284,15 @@ int selectNode(staInfo sta[], bool *fUpColl, bool *fNoUplink, bool *fNoDownlink,
 			}else{
 				sta[i-1].cw = (int)(1/proUp[i]);
 				sta[i-1].backoffCount = rand() % (sta[i-1].cw+1);
-				printf("%f, %d ", proUp[i], sta[i-1].backoffCount);
-				//printf("%f, %d,, ", proUp[i], sta[i-1].cw);
+				//printf("%f, %d ", proUp[i], sta[i-1].backoffCount);
+				//temp++;
 			}
 		}
+		if(i!=0){
+			//printf("%d, ", sta[i-1].cw);
+		}
 	}
+	//printf("%d, ", temp);
 	//printf("\n\n");
 
 	for(i=0; i<gSpec.numSta; i++){
@@ -322,6 +328,7 @@ int selectNode(staInfo sta[], bool *fUpColl, bool *fNoUplink, bool *fNoDownlink,
 			sta[i].fTx = false;
 		}
 	}
+	//printf("%d, ", numTx);
 	if(numTx==0 && *fNoUplink==false){
 		printf("undefined\n");
 	}else if(numTx==1){
@@ -329,6 +336,7 @@ int selectNode(staInfo sta[], bool *fUpColl, bool *fNoUplink, bool *fNoDownlink,
 	}else{
 		*fUpColl = true;
 	}
+	//printf("(%d, %d),", *downNode, *upNode);
 
 	free(proUp);
 	free(proDown);

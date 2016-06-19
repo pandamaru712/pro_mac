@@ -23,6 +23,9 @@ static struct option options[] = {
 	{"delay", required_argument, NULL, 'a'},
 	{"output",required_argument, NULL, 'u'},
 	{"area", required_argument, NULL, 'b'},
+	{"opt", required_argument, NULL, 'p'},
+	{"position", required_argument, NULL, 'x'},
+	{"power", required_argument, NULL, 'w'},
 	{0, 0, 0, 0}
 };
 
@@ -42,6 +45,9 @@ void simSetting(int argc, char **argv){
 	gSpec.delayMode = 0;   //from arriving at buffer to transmitting
 	gSpec.areaSize = 100;   //m
 	gSpec.fOutput = false;
+	gSpec.proMode = 0;
+	gSpec.position = 0;
+	gSpec.delayPower = 1;
 	memset(gSpec.filename, '\0', strlen(gSpec.filename));
 
 	time_t timer;
@@ -49,7 +55,7 @@ void simSetting(int argc, char **argv){
 	timer = time(NULL);
 	local = localtime(&timer);
 
-	while((opt = getopt_long(argc, argv, "hdfos:n:t:l:r:m:a:u:", options, &index)) != -1){
+	while((opt = getopt_long(argc, argv, "hdfos:n:t:l:r:m:a:u:b:p:x:w:", options, &index)) != -1){
 		switch(opt){
 			case 'h':
 				printf(
@@ -66,6 +72,15 @@ void simSetting(int argc, char **argv){
 					"   -a, --delay: delayMode (0/1).\n"
 					"   -u, --output: Output filename.\n"
 					"   -b, --area: Area size (m).\n"
+					"   -x, --position: Node's position.\n"
+					"   -w, --power: delayPower.\n"
+					"      0; AP is (0, 0) and STAs are deployed concentrically.\n"
+					"      1; AP is (0, 0) and STAs are randomly deployed.\n"
+					"      2; AP and STAs are randomly deployed.\n"
+					"   -p, --opt: Evaluation function mode.\n"
+					"      0: Data rate.\n"
+					"      1: Data rate x delay.\n"
+					"      2: delay is used to subject.\n"
 				);
 				exit(1);
 				break;
@@ -108,6 +123,15 @@ void simSetting(int argc, char **argv){
 			case 'b':
 				gSpec.areaSize = atoi(optarg);
 				break;
+			case 'p':
+				gSpec.proMode = atoi(optarg);
+				break;
+			case 'x':
+				gSpec.position = atoi(optarg);
+				break;
+			case 'w':
+				gSpec.delayPower = atof(optarg);
+				break;
 			default:
 				printf("Illegal options! \'%c\' \'%c\'\n", opt, optopt);
 				exit(1);
@@ -145,6 +169,18 @@ void simSetting(int argc, char **argv){
 	}else{
 		printf("   Output to %s.\n", gSpec.filename);
 	}
+	printf("   PRO_MODE is %d.\n", gSpec.proMode);
+	if(gSpec.position==0){
+		printf("   AP is (0, 0) and STAs are deployed concentrically.\n");
+	}else if(gSpec.position==1){
+		printf("   AP is (0, 0) and STAs are randomly deployed.\n");
+	}else if(gSpec.position==2){
+		printf("   AP and STAs are randomly deployed.\n");
+	}else{
+		printf("   Position option is failed.\n");
+		exit(1);
+	}
+	printf("   delayPower is %f.\n", gSpec.delayPower);
 	printf("------------------\n");
 
 	if(gSpec.fOutput==true){

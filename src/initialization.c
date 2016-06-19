@@ -24,6 +24,7 @@ void initializeResult(resultInfo *result){
 	result->proSucc = 0;
 	result->proColl = 0;
 	result->aveTotalTime = 0;
+	result->fairnessIndex = 0;
 }
 
 void initializeNodeInfo(staInfo sta[], apInfo* ap){
@@ -61,8 +62,13 @@ void initializeNodeInfo(staInfo sta[], apInfo* ap){
 	ap->fTx = false;
 	//ap->sumFrameLengthInBuffer = 0;
 	ap->sumDelay = 0.0;
-	ap->x = 0.0;
-	ap->y = 0.0;
+	if(gSpec.position==0 == gSpec.position==1){
+		ap->x = 0.0;
+		ap->y = 0.0;
+	}else if(gSpec.position==2){
+		ap->x = (double)rand() / RAND_MAX * gSpec.areaSize - (double)gSpec.areaSize / 2;
+		ap->y = (double)rand() / RAND_MAX * gSpec.areaSize - (double)gSpec.areaSize / 2;
+	}
 	ap->txPower = 20.0;
 	ap->antennaGain = 2.0;
 	ap->timeNextFrame = poisson(false);
@@ -99,8 +105,13 @@ void initializeNodeInfo(staInfo sta[], apInfo* ap){
 		sta[i].fTx = false;
 		//sta[i].sumFrameLengthInBuffer = 0;
 		sta[i].sumDelay = 0.0;
-		sta[i].x = (double)rand() / RAND_MAX * gSpec.areaSize - (double)gSpec.areaSize / 2;
-		sta[i].y = (double)rand() / RAND_MAX * gSpec.areaSize - (double)gSpec.areaSize / 2;
+		if(gSpec.position==0){
+			sta[i].x = (i / 10 + 1) * 10 * cos((i % 10) * 36 * 3.14 / 180);
+			sta[i].y = (i / 10 + 1) * 10 * sin((i % 10) * 36 * 3.14 / 180);
+		}else if(gSpec.position==1 || gSpec.position==2){
+			sta[i].x = (double)rand() / RAND_MAX * gSpec.areaSize - (double)gSpec.areaSize / 2;
+			sta[i].y = (double)rand() / RAND_MAX * gSpec.areaSize - (double)gSpec.areaSize / 2;
+		}
 		printf("%f, %f\n", sta[i].x, sta[i].y);
 		sta[i].distanceAp = sqrt(pow(sta[i].x, 2)+pow(sta[i].y, 2));
 		sta[i].txPower = 20.0;   //dBm

@@ -34,7 +34,7 @@ double Aeq[2][(NUM_STA+1)*(NUM_STA+1)];
 double beq[2] = {100, 0};
 double lb[(NUM_STA+1)*(NUM_STA+1)] = {};
 
-void simSetting(int, char**);
+//void simSetting(int, char**);
 
 int main(int argc, char *argv[]){
 	//Check option values from command line.
@@ -71,12 +71,12 @@ int main(int argc, char *argv[]){
 
 	for (trialID=0; trialID<gSpec.numTrial; trialID++){
 		printf("\n***** No. %d *****\n", trialID);
-		gElapsedTime = gStd.difs;
-		srand(trialID);
+		srand(3);
 		numTx = 0;
 		fEmpty = false;
 		lastBeacon = 0;
 		initializeNodeInfo(sta, &ap);
+		gElapsedTime = gStd.difs;
 		initializeMatrix();
 		printf("Initialization NodeInfo and Matrix.\n");
 		calculateProbability(sta, &ap, 1);
@@ -85,9 +85,9 @@ int main(int argc, char *argv[]){
 			transmission(sta, &ap);
 
 			if(lastBeacon+100000<gElapsedTime){
-				if(PRO_MODE==1 || PRO_MODE==2){
+				if(gSpec.proMode==1 || gSpec.proMode==2){
 					calculateProbability(sta, &ap, 1);
-			}
+				}
 				lastBeacon = gElapsedTime;
 			}
 		}

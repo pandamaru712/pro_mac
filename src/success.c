@@ -19,7 +19,7 @@ int timeFrameLength(int byteLength, double dataRate){
 	timeLength = gStd.phyHeader + 4 * ((gStd.macService + 8* (gStd.macHeader + byteLength + gStd.macFcs) + gStd.macTail + (4 * gStd.dataRate - 1)) / (4 * dataRate));
 	//printf("%d\n", timeLength);
 
-	printf("%d\n", timeLength);
+	//printf("%d\n", timeLength);
 
 	return timeLength;
 }

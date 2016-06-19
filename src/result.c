@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 #include "result.h"
 #include "macro.h"
 
@@ -17,6 +18,7 @@ void simulationResult(staInfo sta[], apInfo *ap, resultInfo *result, int trialID
 	long rNumPrimFrame = 0;
 	double rDelay = 0.0;
 	double tempColl = 0;
+	long temp1 = 0;
 
 	for(i=0; i<gSpec.numSta; i++){
 		rNumFrameTx += sta[i].numTxFrame;
@@ -25,7 +27,7 @@ void simulationResult(staInfo sta[], apInfo *ap, resultInfo *result, int trialID
 		rNumFrameLost += sta[i].numLostFrame;
 		rNumPrimFrame += sta[i].numPrimFrame;
 		rByteFrameSucc += sta[i].byteSuccFrame;
-		rDelay += sta[i].sumDelay;
+		rDelay += sta[i].sumDelay / sta[i].numSuccFrame;
 	}
 
 	/*if(rNumFrameSucc!=rNumPrimFrame){
@@ -36,9 +38,13 @@ void simulationResult(staInfo sta[], apInfo *ap, resultInfo *result, int trialID
 	}
 
 	//printf("%f, %f\n", rDelay, ap->sumDelay);
+	//printf("\n");
 	for(i=0; i<NUM_STA; i++){
 		tempColl += (double)sta[i].numCollFrame / sta[i].numTxFrame;
+		printf("%f, ", (double)sta[i].numTxFrame / gSpec.chance);
+		//printf("%f, ", (double)sta[i].numCollFrame / sta[i].numTxFrame);
 	}
+	printf("\n");
 	result->aveStaThroughput += (double)rByteFrameSucc * 8 / gElapsedTime / gSpec.numSta;
 	result->apThroughput += (double)ap->byteSuccFrame * 8 / gElapsedTime;
 	result->aveThroughput += (double)(rByteFrameSucc + ap->byteSuccFrame) * 8 /gElapsedTime;
@@ -47,12 +53,17 @@ void simulationResult(staInfo sta[], apInfo *ap, resultInfo *result, int trialID
 	//result->apProColl += (double)ap->numCollFrame / ap->numPrimFrame;
 	//result->aveProColl += (double)(rNumFrameColl + ap->numCollFrame) / (rNumPrimFrame + ap->numPrimFrame);
 
-	result->aveStaDelay += rDelay / rNumFrameSucc;
+	result->aveStaDelay += rDelay / NUM_STA;//rNumFrameSucc;
 	result->apDelay += ap->sumDelay / ap->numSuccFrame;
 	result->aveDelay += (rDelay + ap->sumDelay) / (rNumFrameSucc + ap->numSuccFrame);
 
 	result->proColl += (double)gSpec.coll / gSpec.chance;
 	result->aveTotalTime += (double)gSpec.sumTotalTime / gSpec.chance;
+
+	for(i=0; i<NUM_STA; i++){
+		temp1 += pow(sta[i].numSuccFrame, 2);
+	}
+	result->fairnessIndex += (double)pow(rNumFrameSucc, 2) / (NUM_STA * temp1);
 
 	for(i=0; i<NUM_STA; i++){
 		//printf("%ld\n", sta[i].numSuccFrame);
@@ -61,6 +72,7 @@ void simulationResult(staInfo sta[], apInfo *ap, resultInfo *result, int trialID
 	}
 
 	if(trialID==(gSpec.numTrial-1)){
+		printf("\n***** Result *****\n");
 		printf("STA1台あたりのスループットは%f Mbit/s\n", result->aveStaThroughput / gSpec.numTrial);
 		printf("APのスループットは%f Mbit/s\n", result->apThroughput / gSpec.numTrial);
 		printf("システムスループットは%f Mbit/s\n", result->aveThroughput / gSpec.numTrial);
@@ -75,6 +87,7 @@ void simulationResult(staInfo sta[], apInfo *ap, resultInfo *result, int trialID
 		/*for(i=0; i<NUM_STA; i++){
 			printf("p_u[%d] = %f\n", i, sta[i].sumDelay / sta[i].numSuccFrame);
 		}*/
+		printf("Fairness indexは%f \n", result->fairnessIndex / gSpec.numTrial);
 		if(gSpec.fOutput==true){
 			fprintf(gSpec.output, "\n");
 

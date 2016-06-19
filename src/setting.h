@@ -65,6 +65,9 @@ typedef struct specification{
 	int succ;
 	int coll;
 	long sumTotalTime;
+	int proMode;
+	int position;
+	double delayPower;
 }simSpec;
 
 void simSetting(int, char**);
