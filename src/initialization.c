@@ -7,6 +7,7 @@
 #include "limits.h"
 
 extern std11 gStd;
+extern FILE *gFp;
 
 void initializeResult(resultInfo *result){
 	result->aveStaThroughput = 0.0;
@@ -24,11 +25,14 @@ void initializeResult(resultInfo *result){
 	result->proSucc = 0;
 	result->proColl = 0;
 	result->aveTotalTime = 0;
-	result->fairnessIndex = 0;
+	result->thrJFI = 0;
+	result->oppJFI = 0;
+	result->dlyJFI = 0;
 }
 
 void initializeNodeInfo(staInfo sta[], apInfo* ap){
 	int i, j;
+	double tempX, tempY;
 
 	for(i=0; i<BUFFER_SIZE; i++){
 		ap->buffer[i].lengthMsdu = 0;
@@ -111,6 +115,10 @@ void initializeNodeInfo(staInfo sta[], apInfo* ap){
 		}else if(gSpec.position==1 || gSpec.position==2){
 			sta[i].x = (double)rand() / RAND_MAX * gSpec.areaSize - (double)gSpec.areaSize / 2;
 			sta[i].y = (double)rand() / RAND_MAX * gSpec.areaSize - (double)gSpec.areaSize / 2;
+			//fscanf(gFp, "%lf", &tempX);
+			//fscanf(gFp, "%lf", &tempY);
+			//sta[i].x = tempX;
+			//sta[i].y = tempY;
 		}
 		printf("%f, %f\n", sta[i].x, sta[i].y);
 		sta[i].distanceAp = sqrt(pow(sta[i].x, 2)+pow(sta[i].y, 2));

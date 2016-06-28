@@ -64,7 +64,7 @@ void solveLP(){
 	engPutVariable(gEp, "mx_lb", mx_lb);
 
 	//engOutputBuffer(gEp, buffer, EP_BUFFER_SIZE);
-	//engEvalString(gEp, "mx_A");
+	//engEvalString(gEp, "mx_r");
 	//printf("%s", buffer);
 
 	printf("Optimization starts.\n");
@@ -90,7 +90,7 @@ void solveLP(){
 	}
 	//printf("\n\n");
 	printf("Optimization terminated.\n");
-	printf("***** Probability *****\n");
+	/*printf("***** Probability *****\n");
 	for(i=0; i<=NUM_STA; i++){
 		for(j=0; j<=NUM_STA; j++){
 			printf("%f,", pro[i][j]);
@@ -104,7 +104,7 @@ void solveLP(){
 		}
 	}
 	printf("   fval = %f\n", *fval);
-	printf("***** Probability *****\n\n ");
+	printf("***** Probability *****\n\n ");*/
 
 	mxDestroyArray(mx_r);
 	mxDestroyArray(mx_A);
@@ -304,7 +304,7 @@ int selectNode(staInfo sta[], bool *fUpColl, bool *fNoUplink, bool *fNoDownlink,
 	}
 	//printf("%d, ", minBackoff);
 	if(minBackoff==INT_MAX){
-		printf("All STAs don't have a frame.\n");   //フレームが無いときだけじゃないかも
+		//printf("All STAs don't have a frame.\n");   //フレームが無いときだけじゃないかも ダミーが選ばれる場合も
 	}
 	if(dummyNode<minBackoff){
 		minBackoff = dummyNode;

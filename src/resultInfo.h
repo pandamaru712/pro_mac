@@ -17,7 +17,9 @@ typedef struct resultInformation{
 	double proSucc;
 	double proColl;
 	double aveTotalTime;
-	double fairnessIndex;
+	double oppJFI;
+	double thrJFI;
+	double dlyJFI;
 }resultInfo;
 
 #endif

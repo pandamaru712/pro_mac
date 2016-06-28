@@ -16,8 +16,8 @@ extern std11 gStd;
 int timeFrameLength(int byteLength, double dataRate){
 	int timeLength;
 
-	timeLength = gStd.phyHeader + 4 * ((gStd.macService + 8* (gStd.macHeader + byteLength + gStd.macFcs) + gStd.macTail + (4 * gStd.dataRate - 1)) / (4 * dataRate));
-	//printf("%d\n", timeLength);
+	timeLength = gStd.phyHeader + 4 * ((gStd.macService + 8* (gStd.macHeader + byteLength + gStd.macFcs) + gStd.macTail + (4 * dataRate - 1)) / (4 * dataRate));
+	//printf("%f, %d\n", dataRate, timeLength);
 
 	//printf("%d\n", timeLength);
 
@@ -139,6 +139,7 @@ void transmission(staInfo sta[], apInfo *ap){
 				sta[i].fTx = false;
 				sta[i].numTxFrame++;
 				sta[i].numCollFrame++;
+
 				if(staLength<timeFrameLength(sta[i].buffer[0].lengthMsdu, sta[i].dataRate)){
 					staLength = timeFrameLength(sta[i].buffer[0].lengthMsdu, sta[i].dataRate);
 				}
@@ -153,6 +154,7 @@ void transmission(staInfo sta[], apInfo *ap){
 				}*/
 			}
 		}
+		//printf("%d\n", staLength);
 		if(apLength==0&&staLength==0){
 			printf("Frame length error.\n");
 		}else if(apLength<=staLength){

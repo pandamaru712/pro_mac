@@ -72,7 +72,7 @@ void calculateRSSI(apInfo *ap, staInfo sta[], double delay[]){
 				if(gSpec.proMode==0||gSpec.proMode==2){
 					r_mat[i][j] = shannon(dbm2mw(snr));//downlink = 20*log2(1+snr);
 				}else if(gSpec.proMode==1){
-					r_mat[i][j] = shannon(dbm2mw(snr)) * pow(delay[j] / 10000, gSpec.delayPower);
+					r_mat[i][j] = shannon(dbm2mw(snr)) * pow(delay[j], gSpec.delayPower);
 				}
 				//printf("%f\n", ap->dataRate);
 			}else if(j!=0 && i==0){   //上りのみ
@@ -81,7 +81,7 @@ void calculateRSSI(apInfo *ap, staInfo sta[], double delay[]){
 				if(gSpec.proMode==0||gSpec.proMode==2){
 					r_mat[i][j] = shannon(dbm2mw(snr));
 				}else if(gSpec.proMode==1){
-					r_mat[i][j] = shannon(dbm2mw(snr)) * pow(delay[j] / 10000, gSpec.delayPower);
+					r_mat[i][j] = shannon(dbm2mw(snr)) * pow(delay[j], gSpec.delayPower);
 					//printf("%f = %f * %f / 10000\n", r_mat[i][j], shannon(dbm2mw(snr)), delay[j]);
 				}
 				//printf("%f\n", sta[*upNode-1].dataRate);
@@ -119,7 +119,7 @@ void calculateRSSI(apInfo *ap, staInfo sta[], double delay[]){
 					//printf("%f\n", txPower);
 				}
 				if(gSpec.proMode==1){
-					r_mat[i][j] = (downlink + uplink) * pow(delay[j] / 10000, gSpec.delayPower);
+					r_mat[i][j] = (downlink + uplink) * pow(delay[j], gSpec.delayPower);
 				}else{
 					r_mat[i][j] = downlink + uplink;
 				}
@@ -153,15 +153,15 @@ void calculateRSSI(apInfo *ap, staInfo sta[], double delay[]){
 		}
 	}
 
-	printf("\n***** Rate Matrix *****\n");
+	//printf("\n***** Rate Matrix *****\n");
 	for(i=0;i<NUM_STA+1;i++){
 		for(j=0;j<NUM_STA+1;j++){
 			r[i*(NUM_STA+1)+j] = -r_mat[i][j];
-			//printf("%f, ", r_mat[i][j]);
+			//printf("%f, ", r[i*(NUM_STA+1)+j]);
 		}
 		//printf("\n");
 	}
-	printf("***** Rate Matrix *****\n\n");
+	//printf("***** Rate Matrix *****\n\n");
 }
 
 void calculateDelay(apInfo *ap, staInfo sta[], double delay[]){
@@ -225,11 +225,13 @@ void calculatePhyRate(apInfo *ap, staInfo sta[], int *upNode, int *downNode){
 	//printf("calculatePhyRate %d %d\n", *downNode, *upNode);
 
 	if(*upNode==0 && *downNode!=0){
+		//printf("down half\n");
 		rssi = ap->txPower + ap->antennaGain + sta[*downNode-1].antennaGain - (30*log10(distance(ap, sta, *downNode, 0)) + 47);
 		snr = rssi - gSpec.noise;// pow(10,(rssi)/10)/(pow(10,(gSpec.noise)/10)+pow(10,(gSpec.ICI)/10));
 		ap->dataRate = shannon(dbm2mw(snr));//downlink = 20*log2(1+snr);
 		//printf("%f\n", ap->dataRate);
 	}else if(*upNode!=0 && *downNode==0){
+		//printf("up half\n");
 		rssi = sta[*upNode-1].txPower + sta[*upNode-1].antennaGain + ap->antennaGain - (30*log10(distance(ap, sta, 0, *upNode)) + 47);
 		snr = rssi - gSpec.noise;
 		sta[*upNode-1].dataRate = shannon(dbm2mw(snr));
@@ -237,6 +239,7 @@ void calculatePhyRate(apInfo *ap, staInfo sta[], int *upNode, int *downNode){
 	}else if(*upNode==0 && *downNode==0){
 		printf("Error 876\n");
 	}else{
+		//printf("full duplex\n");
 		rssi = ap->txPower + ap->antennaGain + sta[*downNode-1].antennaGain - (30*log10(distance(ap, sta, *downNode, 0)) + 47);
 		snr = rssi - gSpec.noise;
 		ICI = sta[*upNode-1].txPower + sta[*upNode-1].antennaGain + sta[*downNode-1].antennaGain - (30*log10(distance(ap, sta, *downNode, *upNode)) + 47);
@@ -246,9 +249,9 @@ void calculatePhyRate(apInfo *ap, staInfo sta[], int *upNode, int *downNode){
 			ap->dataRate = shannon(dbm2mw(sinr));
 			rssi = sta[*upNode-1].txPower + sta[*upNode-1].antennaGain + ap->antennaGain - (30*log10(distance(ap, sta, 0, *upNode)) + 47);
 			sta[*upNode-1].dataRate = shannon(dbm2mw(rssi)/(dbm2mw(gSpec.noise)+dbm2mw(ap->txPower-gSpec.SIC)));
-			if(sta[*upNode].dataRate<9){
-				sta[*upNode].dataRate = 9;
-			}
+			/*if(sta[*upNode].dataRate<6){
+				sta[*upNode].dataRate = 6;
+			}*/
 		}else{
 			ICI =mw2dbm((dbm2mw(gSpec.ICIth)-1)*dbm2mw(gSpec.noise));
 			//printf("%f\n", ICI);
@@ -258,13 +261,13 @@ void calculatePhyRate(apInfo *ap, staInfo sta[], int *upNode, int *downNode){
 			}
 			rssi = txPower + sta[*upNode-1].antennaGain + ap->antennaGain - 30*log10(distance(ap, sta, 0, *upNode)) - 47;
 			sta[*upNode-1].dataRate = shannon(dbm2mw(rssi)/(dbm2mw(gSpec.noise)+dbm2mw(ap->txPower-gSpec.SIC)));
-			if(sta[*upNode].dataRate<9){
-				sta[*upNode].dataRate = 9;
-			}
+			/*if(sta[*upNode].dataRate<6){
+				sta[*upNode].dataRate = 6;
+			}*/
 			sinr = mw2dbm(dbm2mw(rssi)/(dbm2mw(gSpec.noise)+dbm2mw(ICI)));
 			ap->dataRate = shannon(dbm2mw(sinr));
 		}
 		//printf("%f\n", ap->dataRate);
-		//printf("%f\n", sta[*upNode-1].dataRate);
+		//printf("sta %d, %f\n", *upNode-1, sta[*upNode-1].dataRate);
 	}
 }

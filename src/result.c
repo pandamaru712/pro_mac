@@ -18,7 +18,9 @@ void simulationResult(staInfo sta[], apInfo *ap, resultInfo *result, int trialID
 	long rNumPrimFrame = 0;
 	double rDelay = 0.0;
 	double tempColl = 0;
-	long temp1 = 0;
+	long opp = 0;
+	double dly = 0;
+	double thr = 0;
 
 	for(i=0; i<gSpec.numSta; i++){
 		rNumFrameTx += sta[i].numTxFrame;
@@ -29,6 +31,8 @@ void simulationResult(staInfo sta[], apInfo *ap, resultInfo *result, int trialID
 		rByteFrameSucc += sta[i].byteSuccFrame;
 		rDelay += sta[i].sumDelay / sta[i].numSuccFrame;
 	}
+
+	printf("%ld, %ld, %ld\n\n", rNumFrameTx, rNumFrameSucc, rNumFrameColl);
 
 	/*if(rNumFrameSucc!=rNumPrimFrame){
 		printf("Somthing is wrong.\n", rNumFrameTx, rNumFrameSucc);
@@ -61,9 +65,13 @@ void simulationResult(staInfo sta[], apInfo *ap, resultInfo *result, int trialID
 	result->aveTotalTime += (double)gSpec.sumTotalTime / gSpec.chance;
 
 	for(i=0; i<NUM_STA; i++){
-		temp1 += pow(sta[i].numSuccFrame, 2);
+		opp += pow(sta[i].numTxFrame, 2);
+		thr += pow(sta[i].byteSuccFrame * 8 / gElapsedTime, 2);
+		dly += pow(sta[i].sumDelay / sta[i].numSuccFrame, 2);
 	}
-	result->fairnessIndex += (double)pow(rNumFrameSucc, 2) / (NUM_STA * temp1);
+	result->oppJFI += (double)pow(rNumFrameTx, 2) / (NUM_STA * opp);
+	result->thrJFI += pow((double)rByteFrameSucc * 8 / gElapsedTime, 2) / (NUM_STA * thr);
+	result->dlyJFI += pow(rDelay, 2) / (NUM_STA * dly);
 
 	for(i=0; i<NUM_STA; i++){
 		//printf("%ld\n", sta[i].numSuccFrame);
@@ -87,7 +95,9 @@ void simulationResult(staInfo sta[], apInfo *ap, resultInfo *result, int trialID
 		/*for(i=0; i<NUM_STA; i++){
 			printf("p_u[%d] = %f\n", i, sta[i].sumDelay / sta[i].numSuccFrame);
 		}*/
-		printf("Fairness indexは%f \n", result->fairnessIndex / gSpec.numTrial);
+		printf("送信機会のFairness indexは%f \n", result->oppJFI / gSpec.numTrial);
+		printf("待機時間のFairness indexは%f \n", result->dlyJFI / gSpec.numTrial);
+		printf("スループットのFairness indexは%f \n", result->thrJFI / gSpec.numTrial);
 		if(gSpec.fOutput==true){
 			fprintf(gSpec.output, "\n");
 
